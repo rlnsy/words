@@ -1,5 +1,6 @@
 from word_utils import parse
 from urllib.request import urlopen
+import json
 
 def save_response(url, num):
     response = urlopen(url)
@@ -7,10 +8,16 @@ def save_response(url, num):
     file.write(response.read().decode('utf-8'))
     file.close()
 
-file = open('html/response2.html', 'r')
+file = open('html/response.html', 'r')
 html = file.read()
 file.close()
 
 print('Parsing response...')
 
-parse(html)
+puzzle_o = parse(html)
+
+puzzle_fp = json.dumps(puzzle_o)
+
+file = open('test.json', 'w')
+file.write(puzzle_fp)
+file.close()
