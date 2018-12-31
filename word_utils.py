@@ -2,15 +2,6 @@ from html.parser import HTMLParser
 from enum import Enum
 import re
 
-ParserState = Enum('ParserState','init '
-                                 'puzzle_title '
-                                 'puzzle_subtitle '
-                                 'author '
-                                 'editor '
-                                 'stats '
-                                 'grid '
-                                 'griditem')
-
 # regex expressions
 non_whitespace = re.compile('\s*\S+\s*')
 rows_e = re.compile('Rows: \d*')
@@ -19,6 +10,8 @@ words_e = re.compile('Words: \d*')
 blocks_e = re.compile('Blocks: \d*')
 num_e = re.compile('\d+')
 letter_e = re.compile('[A-Z]')
+
+ParserState = Enum('ParserState','init puzzle_title puzzle_subtitle author editor stats grid griditem')
 
 
 class ResponseParser(HTMLParser):
@@ -133,8 +126,8 @@ class ResponseParser(HTMLParser):
                     'letter': None,
                 }
 
-                if ('class' in info.keys()):
-                    if (info['class'] == 'black'):
+                if 'class' in info.keys():
+                    if info['class'] == 'black':
                         self.current_cell['is_block'] = True
 
                 self.state = ParserState.griditem
@@ -191,6 +184,6 @@ class ResponseParser(HTMLParser):
 def parse(html):
     parser = ResponseParser()
     parser.feed(html)
+    print('done.')
     puzzle_o = parser.puzzle
-    print(puzzle_o)
     return puzzle_o
