@@ -1,7 +1,6 @@
-from word_utils import parse
+from word_utils.ResponseParser import ResponseParser
 from urllib.request import urlopen
 import json
-
 
 def save_response(url, num):
     response = urlopen(url)
@@ -10,23 +9,23 @@ def save_response(url, num):
     file.close()
 
 
-file = open('html/response.html', 'r')
+file = open('data/html/response2.html', 'r')
 html = file.read()
 file.close()
 
 print('Parsing response...')
 
 # run the parser
-puzzle_o = parse(html)
+puzzle_o = ResponseParser.parse(html)
 
-"""
-puzzle_fp = json.dumps(puzzle_o, indent=1)
 
-save the file
-file = open('test.json', 'w')
-file.write(puzzle_fp)
-file.close()
-"""
+# puzzle_fp = json.dumps(puzzle_o, indent=1)
+# #
+# # #save the file
+# # file = open('test.json', 'w')
+# # file.write(puzzle_fp)
+# # file.close()
+
 
 # test parser results
 print('Tests:')
@@ -36,10 +35,10 @@ stats_rows = puzzle_o['rows']
 grid_cols = len(puzzle_o['grid'][0])
 stats_cols = puzzle_o['columns']
 
-print("rows from stats data:" + str(stats_rows))
+print("rows from stats information :" + str(stats_rows))
 print("rows from actual grid: " + str(grid_rows))   # should be the same
 
-print("columnss from stats data:" + str(stats_cols))
+print("columns from stats information:" + str(stats_cols))
 print("columns from actual grid: " + str(grid_cols))   # should be the same
 
 # test number of blocks
@@ -50,5 +49,5 @@ for row in puzzle_o['grid']:
         if cell['is_block'] is True:
             grid_blocks += 1
 
-print("blocks from stats data:" + str(stats_blocks))
+print("blocks from stats information:" + str(stats_blocks))
 print("blocks from actual grid: " + str(grid_blocks))   # should be the same
