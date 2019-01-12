@@ -44,10 +44,15 @@ class ResponseParser(HTMLParser):
     current_cell = None                         # current cell in which to store data
 
     puzzle = {
+        "collection": 'nyt',
         "title": None,
         "subtitle": None,
         "author": None,
         "editor": None,
+        "day": 0,
+        "month": 0,
+        "year": 0,
+        "day_name": None,
         "rows": 0,
         "columns": 0,
         "words": None,
