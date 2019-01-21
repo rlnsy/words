@@ -14,6 +14,9 @@ letter_e = re.compile('[A-Z]')
 header_date = re.compile('[a-zA-Z]+, [a-zA-Z]+ \d{1,2}, \d{4}') # e.g. Sunday, January 1, 2019
 az_block = re.compile('[a-zA-Z]+')
 num_block = re.compile('\d+')
+clue = re.compile('\d+\. .+ : ')
+clue_num = re.compile('\d+\.')
+clue_end = re.compile(' : ')
 
 month_to_num = {'January': 1, 'February': 2, 'March': 3, 'April': 4, 'May': 5, 'June': 6,
                 'July': 7, 'August': 8, 'September': 9, 'October': 10, 'November': 11, 'December': 12}
@@ -29,6 +32,9 @@ class ParserState(Enum):
     grid = 7
     grid_item = 8
     header = 9
+    clues = 10
+    clues_across = 11
+    clues_down = 12
 
 
 class ResponseParser(HTMLParser):
@@ -58,7 +64,10 @@ class ResponseParser(HTMLParser):
         "words": None,
         "blocks": None,
         "grid": [],
-        "clues": []
+        "clues": {
+            'across': [],
+            'down': []
+        }
     }
 
     @staticmethod                               # parse helper for html attributes
@@ -98,6 +107,19 @@ class ResponseParser(HTMLParser):
         year = int(year_match.group())
 
         return day, month, year, day_name
+
+    def parse_clue(self, raw_clue, clue_type):
+        clue = {
+            'num': None,
+            'content': None
+        }
+        num_match = clue_num.match(raw_clue)
+        num_ex = num_match.group()
+        clue['num'] = ResponseParser.parse_number(num_ex)
+        content_start = num_match.end() + 1         # space and first char
+        content_end = clue_end.search(raw_clue).start()
+        clue['content'] = raw_clue[content_start:content_end]
+        self.puzzle['clues'][clue_type].append(clue)
 
     @staticmethod
     def is_not_whitespace(data):
@@ -180,13 +202,18 @@ class ResponseParser(HTMLParser):
 
                 self.state = ParserState.grid_item
 
-            # TODO: parse clues
+        if 'class' in info.keys():
+            if info['class'] == 'clueshead':
+                self.exit_flag = False
+                # TODO: exit set to false here without escape, will have to override after clues
+                self.state = ParserState.clues
 
     def handle_endtag(self, tag):
         if (self.state != ParserState.init) & self.exit_flag:
             self.state = ParserState.init
         elif (self.state is ParserState.grid) & (self.get_table_size()
                                                  == self.puzzle['rows'] * self.puzzle['columns']):
+            print('exiting grid')
             self.exit_flag = True
             self.state = ParserState.init
         elif (self.state is ParserState.grid_item) & (tag == 'td'):
@@ -231,6 +258,7 @@ class ResponseParser(HTMLParser):
 
             if self.stats_parsed == ResponseParser.STATS_REQUIRED:
                 self.exit_flag = True
+
         elif (self.state == ParserState.grid_item) & ResponseParser.is_not_whitespace(data):
             num_data = num_e.match(data)
             letter_data = letter_e.match(data)
@@ -238,6 +266,21 @@ class ResponseParser(HTMLParser):
                 self.current_cell['number'] = int(num_data.group())
             elif letter_data is not None:
                 self.current_cell['letter'] = letter_data.group()
+
+        elif (self.state == ParserState.clues) & ResponseParser.is_not_whitespace(data):
+            if data == 'Across':
+                self.state = ParserState.clues_across
+            elif data == 'Down':
+                self.state = ParserState.clues_down
+
+        elif (self.state == ParserState.clues_across) | (self.state == ParserState.clues_down):
+            clue_match = clue.match(data)
+            if clue_match is not None:
+                if self.state == ParserState.clues_down:
+                    clue_type = 'down'
+                else:
+                    clue_type = 'across'
+                self.parse_clue(clue_match.group(), clue_type)
 
     @staticmethod
     def parse(html):
