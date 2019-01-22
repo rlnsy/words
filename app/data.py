@@ -1,6 +1,5 @@
 from pymongo import MongoClient
-from word_utils.WordClient import WordClient
-from WordClient import format_date
+from sources.Sources import Sources, format_date
 from exceptions import DatabaseError
 from _datetime import datetime
 
@@ -44,13 +43,12 @@ def get_puzzle(day, month, year, collection):
     :raises: DatabaseError if an error occurs related to saving a new puzzle, or if the new puzzle does not match the
     original query.
     :raises: DownloadError if an error occurred getting a new puzzle from the internet.
-    TODO: write tests for this functionality
     """
     puzzle = find_puzzle(day, month, year, collection)
     if puzzle is None:
         print("Puzzle does not exist in database, downloading...")
         puzzle_date = format_date(day, month, year)
-        new_puzzle = WordClient.download(puzzle_date)
+        new_puzzle = Sources.fetch_puzzle(puzzle_date,collection)              # may raise source error
         save_puzzle(new_puzzle, collection)
         puzzle = find_puzzle(day, month, year, collection)
         if puzzle is None:

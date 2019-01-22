@@ -1,14 +1,11 @@
-from ResponseParser import ResponseParser
+from .ResponseParser import ResponseParser
 from urllib.parse import urlencode
 from urllib.request import urlopen, Request
-from word_utils.exceptions import DownloadError
+from urllib.error import URLError
+from sources.exceptions import DownloadError
 
 base_url = 'https://www.xwordinfo.com'
 puzzle_ext = '/Crossword'
-
-
-def format_date(day, month, year):
-    return str(month) + '/' + str(day) + '/' + str(year)
 
 
 class WordClient:
@@ -18,7 +15,10 @@ class WordClient:
         url = base_url + puzzle_ext
         info = {'date': puzzle_date}
         request = Request(url, urlencode(info).encode())
-        response = urlopen(request)
+        try:
+            response = urlopen(request)
+        except URLError:
+            raise DownloadError             # TODO: let internet connection issues propagate to UI
         if response.status == 200:
             puzzle_o = ResponseParser.parse(response.read().decode('utf-8'))
             return puzzle_o

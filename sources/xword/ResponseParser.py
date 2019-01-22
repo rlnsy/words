@@ -1,7 +1,7 @@
 from html.parser import HTMLParser
 from enum import Enum
 import re
-from word_utils.exceptions import ParseError
+from sources.exceptions import ParseError
 
 # regex expressions
 non_whitespace = re.compile('\s*\S+\s*')

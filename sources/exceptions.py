@@ -1,5 +1,12 @@
+class SourceError(Exception):
+    """
+    To be raised when a puzzle source fails
+    for some reason
+    """
+    pass
 
-class DownloadError(Exception):
+
+class DownloadError(SourceError):
     """
     To be raised when a connection
     to the source puzzle server fails
@@ -7,7 +14,7 @@ class DownloadError(Exception):
     pass
 
 
-class ParseError(Exception):
+class ParseError(SourceError):
     """
     To be raised when parsing of a
     puzzle response fails

@@ -1,6 +1,6 @@
 from flask import Flask, request, jsonify
 import data
-from word_utils.WordClient import format_date
+from sources.Sources import format_date
 
 app = Flask(__name__)
 
