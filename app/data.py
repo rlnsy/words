@@ -1,20 +1,24 @@
 from pymongo import MongoClient
+from pymongo.errors import ServerSelectionTimeoutError
 from sources.Sources import Sources, format_date
 from exceptions import DatabaseError
 from _datetime import datetime
 
 db_client = MongoClient()
-db = db_client['database_0_test']
+db = db_client['words_data']
 
 
 def find_puzzle(day, month, year, collection):
-    puzzle_collection = db[collection]
+    puzzle_collection = db['puzzle_collections'][collection]
     search_query = {
         'day': day,
         'month': month,
         'year': year
     }
-    puzzle = puzzle_collection.find_one(search_query)
+    try:
+        puzzle = puzzle_collection.find_one(search_query)
+    except ServerSelectionTimeoutError:
+        raise DatabaseError
     return puzzle
 
 
@@ -22,7 +26,7 @@ def save_puzzle(puzzle, collection):
     try:
         add_time = datetime.now()
         puzzle['date_added'] = add_time
-        puzzle_collection = db[collection]
+        puzzle_collection = db['puzzle_collections'][collection]
         puzzle['_id'] = format_date(puzzle['day'], puzzle['month'], puzzle['year'])  # using formatted date as key
         ins_id = puzzle_collection.insert_one(puzzle).inserted_id
         print("New puzzle added to %(collection)s on %(date)s with id %(id)s"

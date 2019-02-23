@@ -1,6 +1,7 @@
-from word_utils.ResponseParser import ResponseParser
+from sources.xword.ResponseParser import ResponseParser
 from urllib.request import urlopen
 import json
+
 
 def save_response(url, num):
     response = urlopen(url)
@@ -19,12 +20,12 @@ print('Parsing response...')
 puzzle_o = ResponseParser.parse(html)
 
 
-# puzzle_fp = json.dumps(puzzle_o, indent=1)
-# #
-# # #save the file
-# # file = open('test.json', 'w')
-# # file.write(puzzle_fp)
-# # file.close()
+puzzle_fp = json.dumps(puzzle_o, indent=1)
+
+# save the file
+file = open('test.json', 'w')
+file.write(puzzle_fp)
+file.close()
 
 
 # test parser results
