@@ -13,6 +13,7 @@ class Sources:
         """
         Function for unconditionally downloading a puzzle from a given collection which routes to a source
         :return: puzzle object
+        :raises SourceError
         """
         try:
             if collection == 'nyt':  # switch machine to divide up sources
