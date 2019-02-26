@@ -1,6 +1,7 @@
 .DS_Store
 
 test/app_test.py
+test/test.py
 test.json
 test_grid.json
 test/MiniApp.py
