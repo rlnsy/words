@@ -14,8 +14,8 @@ letter_e = re.compile('[A-Z]')
 header_date = re.compile('[a-zA-Z]+, [a-zA-Z]+ \d{1,2}, \d{4}') # e.g. Sunday, January 1, 2019
 az_block = re.compile('[a-zA-Z]+')
 num_block = re.compile('\d+')
-clue = re.compile('\d+\. .+ : ')
-clue_num = re.compile('\d+\.')
+clue = re.compile('.+ : ')
+answer = re.compile('[A-Z]+')
 clue_end = re.compile(' : ')
 
 month_to_num = {'January': 1, 'February': 2, 'March': 3, 'April': 4, 'May': 5, 'June': 6,
@@ -40,17 +40,17 @@ class ParserState(Enum):
 class ResponseParser(HTMLParser):
 
     STATS_REQUIRED = 4                          # number of basic stats to be parsed before changing state
-
     state = ParserState.init                    # current state of the parser
-
     exit_flag = True                            # indicates whether parser should reset state on next endtag
-
     stats_parsed = 0
-
     current_cell = None                         # current cell in which to store data
+    current_clue = {
+        'num': 0,
+        'content': '',
+        'answer': '',
+    }
 
     puzzle = {
-        "collection": 'nyt',
         "title": None,
         "subtitle": None,
         "author": None,
@@ -108,19 +108,6 @@ class ResponseParser(HTMLParser):
 
         return day, month, year, day_name
 
-    def parse_clue(self, raw_clue, clue_type):
-        clue = {
-            'num': None,
-            'content': None
-        }
-        num_match = clue_num.match(raw_clue)
-        num_ex = num_match.group()
-        clue['num'] = ResponseParser.parse_number(num_ex)
-        content_start = num_match.end() + 1         # space and first char
-        content_end = clue_end.search(raw_clue).start()
-        clue['content'] = raw_clue[content_start:content_end]
-        self.puzzle['clues'][clue_type].append(clue)
-
     @staticmethod
     def is_not_whitespace(data):
         return non_whitespace.match(data) is not None
@@ -145,6 +132,10 @@ class ResponseParser(HTMLParser):
             for cell in row:
                 count += 1
         return count
+
+    def get_num_clues(self):
+        num_clues = len(self.puzzle['clues']['across']) + len(self.puzzle['clues']['down'])
+        return num_clues
 
     def handle_starttag(self, tag, attrs):
 
@@ -274,13 +265,35 @@ class ResponseParser(HTMLParser):
                 self.state = ParserState.clues_down
 
         elif (self.state == ParserState.clues_across) | (self.state == ParserState.clues_down):
+            num_match = num_e.match(data)
             clue_match = clue.match(data)
-            if clue_match is not None:
+            answer_match = answer.match(data)
+
+            if clue_match is not None and self.current_clue['num'] > 0:
+                raw_clue = clue_match.group()
+                content_end = clue_end.search(raw_clue).start()
+                self.current_clue['content'] = raw_clue[0:content_end]
+            elif answer_match is not None:
+                ans = answer_match.group()
+                self.current_clue['answer'] = ans
+            elif num_match is not None:
+                num = int(num_match.group())
+                self.current_clue['num'] = num
+
+            if self.current_clue['num'] > 0 and \
+                    len(self.current_clue['content']) > 0 and \
+                    len(self.current_clue['answer']) > 0:
                 if self.state == ParserState.clues_down:
                     clue_type = 'down'
                 else:
                     clue_type = 'across'
-                self.parse_clue(clue_match.group(), clue_type)
+                self.puzzle['clues'][clue_type].append(self.current_clue.copy())
+                self.current_clue['num'] = 0  # reset
+                self.current_clue['content'] = ''
+                self.current_clue['answer'] = ''
+
+                if self.get_num_clues() == self.puzzle['words']:
+                    self.state = ParserState.init
 
     @staticmethod
     def parse(html):
@@ -293,4 +306,6 @@ class ResponseParser(HTMLParser):
             raise ParseError
         print('done.')
         puzzle_o = parser.puzzle
+        num_clues = parser.get_num_clues()
+        print('Clues parsed: ' + str(num_clues))
         return puzzle_o

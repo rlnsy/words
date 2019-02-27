@@ -6,18 +6,20 @@ from .xword.ResponseParser import ResponseParser
 
 class XwordParserTests(TestCase):
 
-    sample_response = None
-    parser = None
+    url = 'https://www.xwordinfo.com/Crossword'
+    info = {'date': '12/24/2018'}
+    request = Request(url, urlencode(info).encode())
+    response = urlopen(request)
 
-    def setUp(self):
-        url = 'https://www.xwordinfo.com/Crossword'
-        info = {'date': '12/24/2018'}
-        request = Request(url, urlencode(info).encode())
-        response = urlopen(request)
-        self.sample_response = response.read().decode('utf-8')
-        self.parser = ResponseParser()
+    sample_response = response.read().decode('utf-8')
+    parser = ResponseParser()
+    puzzle = ResponseParser.parse(sample_response)
 
-    def testClues(self):
-        puzzle_o = ResponseParser.parse(self.sample_response)
-        num_clues_sample = len(puzzle_o['clues']['down'])
-        self.assertGreater(num_clues_sample, 0)
+    def testCluesNonZero(self):
+        num_clues = len(self.puzzle['clues']['across']) + len(self.puzzle['clues']['down'])
+        self.assertGreater(num_clues, 0)
+
+    def testCluesNumCorrect(self):
+        num_clues = len(self.puzzle['clues']['across']) + len(self.puzzle['clues']['down'])
+        self.assertEqual(num_clues, self.puzzle['words'])
+
