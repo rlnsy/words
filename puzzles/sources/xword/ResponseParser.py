@@ -1,7 +1,7 @@
 from html.parser import HTMLParser
 from enum import Enum
 import re
-from sources.exceptions import ParseError
+from sources.exceptions import ParseError, AvailabilityError
 
 # regex expressions
 non_whitespace = re.compile('\s*\S+\s*')
@@ -17,6 +17,7 @@ num_block = re.compile('\d+')
 clue = re.compile('.+ : ')
 answer = re.compile('[A-Z]+')
 clue_end = re.compile(' : ')
+unavailable_msg = re.compile('puzzle is not yet available')
 
 month_to_num = {'January': 1, 'February': 2, 'March': 3, 'April': 4, 'May': 5, 'June': 6,
                 'July': 7, 'August': 8, 'September': 9, 'October': 10, 'November': 11, 'December': 12}
@@ -213,6 +214,11 @@ class ResponseParser(HTMLParser):
             self.state = ParserState.grid
 
     def handle_data(self, data):
+
+        unavailability = unavailable_msg.search(data)
+        if unavailability is not None:
+            raise AvailabilityError
+
         if self.state == ParserState.header:
             date_ex = header_date.search(data).group()
             day, month, year, day_name = ResponseParser.parse_date(date_ex)
@@ -301,6 +307,9 @@ class ResponseParser(HTMLParser):
         try:
             parser = ResponseParser()
             parser.feed(html)
+        except AvailabilityError:
+            print("Puzzle was unavailable")
+            raise AvailabilityError
         except Exception:
             print("An internal error occurred in parsing :(")
             raise ParseError

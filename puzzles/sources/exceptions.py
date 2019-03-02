@@ -20,3 +20,11 @@ class ParseError(SourceError):
     puzzle response fails
     """
     pass
+
+
+class AvailabilityError(SourceError):
+    """
+    to be raised when a requested puzzle is valid but unavailable
+    (e.g. date is in the future or puzzle not available on requested date)
+    """
+    pass
