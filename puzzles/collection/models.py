@@ -40,11 +40,12 @@ class PuzzleClue(models.Model):
     A puzzle clue with an associated grid number and clue content
     json example:
     {
-        "num" : 5, "content" : "Cooper of hard rock"
+        "num" : 5, "content" : "Cooper of hard rock", "answer": "ALICE"
     }
     """
     grid_num = models.IntegerField()
     content = models.CharField(max_length=200)
+    answer = models.CharField(max_length=50)
 
 
 class ClueSet(models.Model):
@@ -69,7 +70,7 @@ class Puzzle(models.Model):
     protocol as source response parsers. Grid and clue lists are represented as JSON Fields.
     """
 
-    collection = models.CharField(max_length=50)    # Original collection
+    collection = models.CharField(max_length=50)    # collection
     title = models.CharField(max_length=200)        # Primary puzzle title
     subtitle = models.CharField(max_length=200)     # Secondary title, if applicable
     author = models.CharField(max_length=100)       # Puzzle Author
@@ -80,11 +81,13 @@ class Puzzle(models.Model):
     day_name = models.CharField(max_length=10)      # Name of publish day (e.g. 'Sunday')
     num_rows = models.IntegerField()                # Number of rows in puzzle grid
     num_columns = models.IntegerField()             # Number of columns (usually the same as num_rows)
-    num_word = models.IntegerField()                # Number of words in the puzzle
+    num_words = models.IntegerField()                # Number of words in the puzzle
     num_blocks = models.IntegerField()              # Number of black cells in the puzzle
 
     grid = models.OneToOneField(PuzzleGrid, on_delete=models.CASCADE, related_name="grid_of")
     clues = models.OneToOneField(PuzzleClues, on_delete=models.CASCADE, related_name="clues_of")
+
+    json = models.CharField(max_length=100000)       # Original source JSON
 
     def __str__(self):
         return self.title

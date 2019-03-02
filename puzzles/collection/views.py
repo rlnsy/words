@@ -1,16 +1,20 @@
 from django.http import HttpResponse, JsonResponse
-from sources.Sources import Sources, format_date
-from sources.exceptions import SourceError
+from .data import get_puzzle
+import json
 
 
 def index(request):
-    return HttpResponse("Hello. You're at the collections index.")
+    return HttpResponse("COLLECTION")
 
 
-def get(request, collection_name):
-    date = format_date(24, 12, 2018)
-    try:
-        puzzle = Sources.fetch_puzzle(date, collection_name)
-    except SourceError:
-        return HttpResponse("ERROR")
-    return JsonResponse(puzzle)
+def by_collection_date(request, collection_name):
+    month = request.GET['month']
+    day = request.GET['day']
+    year = request.GET['year']
+    puzzle = get_puzzle(collection=collection_name, day=day, month=month, year=year)
+    if puzzle is None:
+        return HttpResponse("ERROR", status=404)
+    else:
+        # TODO
+        # Stub for view layer
+        return JsonResponse(json.loads(puzzle.json), status=200)

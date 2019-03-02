@@ -13,7 +13,6 @@ class XwordParserTests(TestCase):
     response = urlopen(request)
 
     sample_response = response.read().decode('utf-8')
-    parser = ResponseParser()
     puzzle = ResponseParser.parse(sample_response)
 
     def testCluesNonZero(self):
