@@ -41,35 +41,44 @@ class ParserState(Enum):
 class ResponseParser(HTMLParser):
 
     STATS_REQUIRED = 4                          # number of basic stats to be parsed before changing state
+
     state = ParserState.init                    # current state of the parser
     exit_flag = True                            # indicates whether parser should reset state on next endtag
     stats_parsed = 0
     current_cell = None                         # current cell in which to store data
-    current_clue = {
-        'num': 0,
-        'content': '',
-        'answer': '',
-    }
+    current_clue = None
+    puzzle = None
 
-    puzzle = {
-        "title": None,
-        "subtitle": None,
-        "author": None,
-        "editor": None,
-        "day": 0,
-        "month": 0,
-        "year": 0,
-        "day_name": None,
-        "rows": 0,
-        "columns": 0,
-        "words": None,
-        "blocks": None,
-        "grid": [],
-        "clues": {
-            'across': [],
-            'down': []
+    def __init__(self):
+        super().__init__()
+        self.state = ParserState.init
+        self.exit_flag = True
+        self.stats_parsed = 0
+        self.current_cell = None
+        self.current_clue = {
+            'num': 0,
+            'content': '',
+            'answer': '',
         }
-    }
+        self.puzzle = {
+            "title": None,
+            "subtitle": None,
+            "author": None,
+            "editor": None,
+            "day": 0,
+            "month": 0,
+            "year": 0,
+            "day_name": None,
+            "rows": 0,
+            "columns": 0,
+            "words": None,
+            "blocks": None,
+            "grid": [],
+            "clues": {
+                'across': [],
+                'down': []
+            }
+        }
 
     @staticmethod                               # parse helper for html attributes
     def parse_attrs(pairs):
@@ -317,4 +326,5 @@ class ResponseParser(HTMLParser):
         puzzle_o = parser.puzzle
         num_clues = parser.get_num_clues()
         print('Clues parsed: ' + str(num_clues))
+        parser.__init__()
         return puzzle_o
