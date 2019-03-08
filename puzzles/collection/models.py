@@ -1,6 +1,5 @@
 from django.db import models
 
-
 """
 Puzzle Object Models
 """
@@ -70,7 +69,6 @@ class Puzzle(models.Model):
     protocol as source response parsers. Grid and clue lists are represented as JSON Fields.
     """
 
-    collection = models.CharField(max_length=50)    # collection
     title = models.CharField(max_length=200)        # Primary puzzle title
     subtitle = models.CharField(max_length=200)     # Secondary title, if applicable
     author = models.CharField(max_length=100)       # Puzzle Author
@@ -87,7 +85,25 @@ class Puzzle(models.Model):
     grid = models.OneToOneField(PuzzleGrid, on_delete=models.CASCADE, related_name="grid_of")
     clues = models.OneToOneField(PuzzleClues, on_delete=models.CASCADE, related_name="clues_of")
 
-    json = models.CharField(max_length=100000)       # Original source JSON
+    collection = models.ForeignKey('Collection', blank=True,
+                                   on_delete=models.CASCADE, related_name="collection_containing")
 
     def __str__(self):
         return self.title
+
+
+"""
+Other Models
+"""
+
+
+class Collection(models.Model):
+    """
+    Collection Model
+    """
+    long_name = models.CharField(max_length=200)
+    name = models.CharField(max_length=50)
+    puzzles = models.ManyToManyField(Puzzle, related_name="puzzles_in")
+
+    def __str__(self):
+        return self.long_name

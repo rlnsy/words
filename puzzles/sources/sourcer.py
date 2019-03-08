@@ -1,12 +1,13 @@
 from .xword.WordClient import WordClient
 from .exceptions import SourceError
-
+from collection.models import Collection
+from django.core.exceptions import ObjectDoesNotExist
 
 def format_date(day, month, year):
     return str(month) + '/' + str(day) + '/' + str(year)
 
 
-class Sources:
+class Sourcer:
 
     @staticmethod
     def fetch_puzzle(puzzle_date, collection):
@@ -16,9 +17,12 @@ class Sources:
         :raises SourceError
         """
         try:
-            if collection == 'nyt':  # switch machine to divide up sources
+            coll = Collection.objects.get(name=collection)
+            if coll.name == 'nyt':
                 return WordClient.download(puzzle_date)
             else:
+                print("Collection name match in database, but no source linked")
                 raise SourceError
-        except SourceError as se:
-            raise se
+        except ObjectDoesNotExist:
+            print("No collection matching given short name")
+            raise SourceError

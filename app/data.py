@@ -1,6 +1,6 @@
 from pymongo import MongoClient
 from pymongo.errors import ServerSelectionTimeoutError
-from sources.Sources import Sources, format_date
+from sources.sourcer import Sourcer, format_date
 from exceptions import DatabaseError
 from _datetime import datetime
 
@@ -52,7 +52,7 @@ def get_puzzle(day, month, year, collection):
     if puzzle is None:
         print("Puzzle does not exist in database, downloading...")
         puzzle_date = format_date(day, month, year)
-        new_puzzle = Sources.fetch_puzzle(puzzle_date,collection)              # may raise source error
+        new_puzzle = Sourcer.fetch_puzzle(puzzle_date, collection)              # may raise source error
         save_puzzle(new_puzzle, collection)
         puzzle = find_puzzle(day, month, year, collection)
         if puzzle is None:

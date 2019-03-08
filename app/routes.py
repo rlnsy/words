@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify
 from flask_api import status
 import data
-from sources.Sources import format_date
+from sources.sourcer import format_date
 from exceptions import DatabaseError
 
 app = Flask(__name__)

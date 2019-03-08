@@ -1,8 +1,16 @@
-from .models import Puzzle, PuzzleGrid, PuzzleRow, PuzzleCell, PuzzleClues, ClueSet, PuzzleClue
 from django.core.exceptions import ObjectDoesNotExist
-from sources.Sources import Sources, format_date
+from sources.sourcer import Sourcer, format_date
 from sources.exceptions import SourceError
-import json
+from .models import (
+    Collection,
+    Puzzle,
+    PuzzleGrid,
+    PuzzleRow,
+    PuzzleCell,
+    PuzzleClues,
+    ClueSet,
+    PuzzleClue
+)
 
 
 def find_puzzle(collection, day, month, year):
@@ -31,12 +39,12 @@ def save_puzzle(collection, day, month, year):
     :param year: puzzle publish year
     :return: the result of a find() operation with the given parameters (after performing download)
     """
-    if collection == 'nyt':
-        date = format_date(day, month, year)
-        try:
-            info = Sources.fetch_puzzle(date, collection)
-        except SourceError:
-            return None
+
+    date = format_date(day, month, year)
+    try:
+        info = Sourcer.fetch_puzzle(date, collection.name)
+    except SourceError:
+        return None
 
     # create the object
     new_puzzle = Puzzle(collection=collection)
@@ -93,18 +101,23 @@ def save_puzzle(collection, day, month, year):
 
     new_puzzle.clues = new_clues
 
-    new_puzzle.json = json.dumps(info)
-
     new_puzzle.save()
+
+    new_puzzle.collection.puzzles.add(new_puzzle)
 
     return find_puzzle(collection, day, month, year)
 
 
-def get_puzzle(collection, day, month, year):
+def get_puzzle(collection_name, day, month, year):
     """
     Performs a find() for the puzzle with given parameters. If this is unsuccessful, performs a save().
     If the save is unsuccessful, returns None
     """
+    try:
+        collection = Collection.objects.get(name=collection_name)
+    except ObjectDoesNotExist:
+        print("No collection matching provided short name")
+        return None
     puzzle = find_puzzle(collection, day, month, year)
     if puzzle is None:
         return save_puzzle(collection, day, month, year)
