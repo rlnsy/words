@@ -28,7 +28,7 @@ def find_puzzle(collection, day, month, year):
     """
     logger.info('Finding puzzle...')
     try:
-        puzzle = Puzzle.objects.get(collection=collection, pub_day=day, pub_month=month, pub_year=year)
+        puzzle = collection.puzzles.get(pub_day=day, pub_month=month, pub_year=year)
         return puzzle
     except Puzzle.DoesNotExist:
         logger.info('not found')
@@ -121,7 +121,7 @@ def save_puzzle(collection, day, month, year):
     # create the object
     new_puzzle = Puzzle(collection=collection)
     new_puzzle.title = info['title']
-    new_puzzle.subtitle = info['title']
+    new_puzzle.subtitle = info['subtitle']
     new_puzzle.author = info['author']
     new_puzzle.editor = info['editor']
     new_puzzle.pub_day = info['day']

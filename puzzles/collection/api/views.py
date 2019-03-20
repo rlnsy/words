@@ -2,6 +2,7 @@ from rest_framework import generics
 from rest_framework.views import APIView, Response
 from rest_framework.permissions import AllowAny
 from django.shortcuts import get_object_or_404
+from collection.data import get_puzzle
 import logging
 
 from collection.models import (
@@ -73,6 +74,17 @@ class PuzzleCluesAPIView(generics.ListAPIView):
     serializer_class = ClueDetailSerializer
     permission_classes = [AllowAny]
 
-# class PuzzleByDate(APIView):
-#     def get(self, request, day, month):
-#
+
+# /puzzles/date
+class PuzzleByDateView(APIView):
+    """
+    Retrieve a puzzle instance by date and collection parameters
+    """
+    def get(self, request):
+        puzzle = get_puzzle(day=request.query_params['day'], month=request.query_params['month'],
+                            year=request.query_params['year'], collection_name=request.query_params['collection'])
+        if puzzle is None:
+            return Response("ERROR", status=404)
+        else:
+            serializer = PuzzleDetailSerializer(puzzle, context={'request': request})
+            return Response(serializer.data)
