@@ -11,11 +11,11 @@ from .views import (
 from django.urls import path
 
 urlpatterns = [
-    path('puzzle/', PuzzleListAPIView.as_view(), name='puzzle-list'),
-    path('puzzle/<int:pk>', PuzzleDetailAPIView.as_view(), name='puzzle-detail'),
-    path('collection/', CollectionListAPIView.as_view(), name='collection-list'),
-    path('collection/<str:name>/', CollectionAPIView.as_view(), name='collection-detail'),
-    path('clue/', ClueListAPIView.as_view(), name='clue-list'),
-    path('clue/<int:id>', ClueDetailAPIView.as_view(), name='clue-detail'),
-    path('puzzle/<int:id>/clues/', PuzzleCluesAPIView.as_view(), name='puzzleclues-detail'),
+    path('puzzles/', PuzzleListAPIView.as_view(), name='puzzle-list'),
+    path('puzzles/<int:pk>', PuzzleDetailAPIView.as_view(), name='puzzle-detail'),
+    path('collections/', CollectionListAPIView.as_view(), name='collection-list'),
+    path('collections/<str:name>/', CollectionAPIView.as_view(), name='collection-detail'),
+    path('clues/', ClueListAPIView.as_view(), name='clue-list'),
+    path('clues/<int:pk>', ClueDetailAPIView.as_view(), name='clue-detail'),
+    path('puzzles/<int:id>/clues/', PuzzleCluesAPIView.as_view(), name='puzzleclues-detail'),
 ]

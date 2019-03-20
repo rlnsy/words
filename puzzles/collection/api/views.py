@@ -21,28 +21,28 @@ from .serializers import (
 
 logger = logging.getLogger('django')
 
-# /puzzle/<id>
+# /puzzles/<id>
 class PuzzleDetailAPIView(generics.RetrieveAPIView):
     queryset = Puzzle.objects.all()
     serializer_class = PuzzleDetailSerializer
     permission_classes = [AllowAny]
 
 
-# /puzzle
+# /puzzles
 class PuzzleListAPIView(generics.ListAPIView):
     queryset = Puzzle.objects.all()
     serializer_class = PuzzleListSerializer
     permission_classes = [AllowAny]
 
 
-# /collection
+# /collections
 class CollectionListAPIView(generics.ListAPIView):
     queryset = Collection.objects.all()
     serializer_class = CollectionListSerializer
     permission_classes = [AllowAny]
 
 
-# /collection/<name>
+# /collections/<name>
 class CollectionAPIView(generics.RetrieveAPIView):
     lookup_field = 'name'
     queryset = Collection.objects.all()
@@ -50,21 +50,21 @@ class CollectionAPIView(generics.RetrieveAPIView):
     permission_classes = [AllowAny]
 
 
-# /clue
+# /clues
 class ClueListAPIView(generics.ListAPIView):
     queryset = AbstractClue.objects.all()
     serializer_class = AbstractClueSerializer
     permission_classes = [AllowAny]
 
 
-# /clue/<id>
+# /clues/<id>
 class ClueDetailAPIView(generics.RetrieveAPIView):
     queryset = AbstractClue.objects.all()
     serializer_class = AbstractClueSerializer
     permission_classes = [AllowAny]
 
 
-# /puzzle/<id>/clues
+# /puzzles/<id>/clues
 class PuzzleCluesAPIView(generics.ListAPIView):
 
     def get_queryset(self):
@@ -72,3 +72,7 @@ class PuzzleCluesAPIView(generics.ListAPIView):
 
     serializer_class = ClueDetailSerializer
     permission_classes = [AllowAny]
+
+# class PuzzleByDate(APIView):
+#     def get(self, request, day, month):
+#
