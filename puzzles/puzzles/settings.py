@@ -37,6 +37,7 @@ REST_FRAMEWORK = {
 
 INSTALLED_APPS = [
     'rest_framework',
+    'django_extensions',
     'sources.apps.SourcesConfig',
     'collection.apps.CollectionConfig',
     'django.contrib.admin',
@@ -127,3 +128,22 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/2.1/howto/static-files/
 
 STATIC_URL = '/static/'
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'file': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': './info.log',
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['file'],
+            'level': 'INFO',
+            'propagate': True,
+        },
+    },
+}

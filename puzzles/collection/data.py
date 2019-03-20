@@ -1,4 +1,3 @@
-from django.core.exceptions import ObjectDoesNotExist
 from sources.sourcer import Sourcer, format_date
 from sources.exceptions import SourceError
 from .models import (
@@ -8,9 +7,14 @@ from .models import (
     PuzzleRow,
     PuzzleCell,
     PuzzleClues,
-    ClueSet,
-    PuzzleClue
+    AbstractClue,
+    PuzzleClue,
+    ClueSet
 )
+
+import logging
+
+logger = logging.getLogger('django')
 
 
 def find_puzzle(collection, day, month, year):
@@ -22,11 +26,76 @@ def find_puzzle(collection, day, month, year):
     :param year: puzzle publish year
     :return: a Puzzle object fitting the parameters, or None
     """
+    logger.info('Finding puzzle...')
     try:
         puzzle = Puzzle.objects.get(collection=collection, pub_day=day, pub_month=month, pub_year=year)
         return puzzle
-    except ObjectDoesNotExist:
+    except Puzzle.DoesNotExist:
+        logger.info('not found')
         return None
+
+
+def save_clues(info):
+
+    new_clues = PuzzleClues()
+    a_set = ClueSet()
+    a_set.save()
+    d_set = ClueSet()
+    d_set.save()
+    new_clues.across = a_set
+    new_clues.down = d_set
+    new_clues.save()
+
+    clue_reg = []  # list of clues to register with puzzle
+
+    def make_new_clue(clue, set):
+        # create and save a new puzzle clue
+
+        try:
+            clue_abstract = AbstractClue.objects.get(content=clue['content'], answer=clue['answer'])
+        except AbstractClue.DoesNotExist:
+            # create the new abstract clue
+            clue_abstract = AbstractClue(content=clue['content'], answer=clue['answer'])
+            clue_abstract.save()
+
+        clue_reg.append(clue_abstract)
+
+        new_clue = PuzzleClue(grid_num=clue['num'], abstract=clue_abstract)
+        new_clue.set = set
+        new_clue.save()
+        return new_clue
+
+    for c in info['clues']['across']:
+        new = make_new_clue(c, a_set)
+        a_set.items.add(new)
+
+    for c in info['clues']['down']:
+        new = make_new_clue(c, d_set)
+        d_set.items.add(new)
+
+    return new_clues, clue_reg
+
+
+def save_grid(info):
+    new_grid = PuzzleGrid()
+    new_grid.save()
+    for row in info['grid']:
+        new_row = PuzzleRow()
+        new_row.save()
+        new_grid.rows.add(new_row)
+        for cell in row:
+            new_cell = PuzzleCell(is_block=cell['is_block'], letter=cell['letter'])
+            if cell['number'] is not None:
+                new_cell.number = cell['number']
+            else:
+                new_cell.number = 0
+            if cell['letter'] is not None:
+                new_cell.letter = cell['letter']
+            else:
+                new_cell.letter = ''
+            new_cell.save()
+            new_row.cells.add(new_cell)
+    return new_grid
 
 
 def save_puzzle(collection, day, month, year):
@@ -40,7 +109,10 @@ def save_puzzle(collection, day, month, year):
     :return: the result of a find() operation with the given parameters (after performing download)
     """
 
+    logger.info('Saving a new puzzle in the database!')
+
     date = format_date(day, month, year)
+
     try:
         info = Sourcer.fetch_puzzle(date, collection.name)
     except SourceError:
@@ -60,50 +132,14 @@ def save_puzzle(collection, day, month, year):
     new_puzzle.num_columns = info['columns']
     new_puzzle.num_words = info['words']
     new_puzzle.num_blocks = info['blocks']
-
-    new_grid = PuzzleGrid()
-    new_grid.save()
-    new_puzzle.grid = new_grid
-
-    for row in info['grid']:
-        new_row = PuzzleRow()
-        new_row.save()
-        new_puzzle.grid.rows.add(new_row)
-        for cell in row:
-            new_cell = PuzzleCell(is_block=cell['is_block'], letter=cell['letter'])
-            if cell['number'] is not None:
-                new_cell.number = cell['number']
-            else:
-                new_cell.number = 0
-            if cell['letter'] is not None:
-                new_cell.letter = cell['letter']
-            else:
-                new_cell.letter = ''
-            new_cell.save()
-            new_row.cells.add(new_cell)
-
-    new_clues = PuzzleClues()
-    clues_across = ClueSet()
-    clues_down = ClueSet()
-    clues_across.save()
-    clues_down.save()
-    for clue in info['clues']['across']:
-        new_clue = PuzzleClue(grid_num=clue['num'], content=clue['content'], answer=clue['answer'])
-        new_clue.save()
-        clues_across.set.add(new_clue)
-    for clue in info['clues']['down']:
-        new_clue = PuzzleClue(grid_num=clue['num'], content=clue['content'], answer=clue['answer'])
-        new_clue.save()
-        clues_down.set.add(new_clue)
-    new_clues.across = clues_across
-    new_clues.down = clues_down
-    new_clues.save()
-
-    new_puzzle.clues = new_clues
-
+    new_puzzle.grid = save_grid(info)
+    new_puzzle.clues, to_add = save_clues(info)
     new_puzzle.save()
 
-    new_puzzle.collection.puzzles.add(new_puzzle)
+    for clue_used in to_add:
+        clue_used.puzzles.add(new_puzzle)   # register usage of clue
+
+    new_puzzle.collection.puzzles.add(new_puzzle)   # add to the collection
 
     return find_puzzle(collection, day, month, year)
 
@@ -115,7 +151,7 @@ def get_puzzle(collection_name, day, month, year):
     """
     try:
         collection = Collection.objects.get(name=collection_name)
-    except ObjectDoesNotExist:
+    except Collection.DoesNotExist:
         print("No collection matching provided short name")
         return None
     puzzle = find_puzzle(collection, day, month, year)

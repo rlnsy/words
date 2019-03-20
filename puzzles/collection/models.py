@@ -34,32 +34,34 @@ class PuzzleGrid(models.Model):
     rows = models.ManyToManyField(PuzzleRow)    # all the rows
 
 
-class PuzzleClue(models.Model):
-    """
-    A puzzle clue with an associated grid number and clue content
-    json example:
-    {
-        "num" : 5, "content" : "Cooper of hard rock", "answer": "ALICE"
-    }
-    """
-    grid_num = models.IntegerField()
+class AbstractClue(models.Model):
     content = models.CharField(max_length=200)
     answer = models.CharField(max_length=50)
+    # usages = models.IntegerField()
+    # TODO: usages via model reference count
+    puzzles = models.ManyToManyField('collection.Puzzle', blank=True, related_name="puzzles_using")
+
+    def __str__(self):
+        return self.content
 
 
 class ClueSet(models.Model):
-    """
-    A set of puzzle clues
-    """
-    set = models.ManyToManyField(PuzzleClue)
+    # a generic set of clues
+    pass
+
+
+class PuzzleClue(models.Model):
+    grid_num = models.IntegerField()
+    abstract = models.ForeignKey(AbstractClue, on_delete=models.CASCADE, related_name="generic_clue")
+    set = models.ForeignKey(ClueSet, on_delete=models.CASCADE, related_name='items')
 
 
 class PuzzleClues(models.Model):
     """
-    All the necessary clues for a project; across and down sets
-    """
-    across = models.OneToOneField(ClueSet, on_delete=models.CASCADE, related_name="+")
-    down = models.OneToOneField(ClueSet, on_delete=models.CASCADE, related_name="+")
+    #     All the necessary clues for a puzzle; across and down sets
+    #     """
+    across = models.OneToOneField(ClueSet, on_delete=models.CASCADE, related_name='+')
+    down = models.OneToOneField(ClueSet, on_delete=models.CASCADE, related_name='+')
 
 
 class Puzzle(models.Model):
@@ -85,7 +87,7 @@ class Puzzle(models.Model):
     grid = models.OneToOneField(PuzzleGrid, on_delete=models.CASCADE, related_name="grid_of")
     clues = models.OneToOneField(PuzzleClues, on_delete=models.CASCADE, related_name="clues_of")
 
-    collection = models.ForeignKey('Collection', blank=True,
+    collection = models.ForeignKey('collection.Collection', blank=True,
                                    on_delete=models.CASCADE, related_name="collection_containing")
 
     def __str__(self):
