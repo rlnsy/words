@@ -1,0 +1,1 @@
+bug with certain clues not carrying over from source (i.e. x^2 and math expressions)
