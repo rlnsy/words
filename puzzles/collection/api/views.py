@@ -22,6 +22,7 @@ from .serializers import (
 
 logger = logging.getLogger('django')
 
+
 # /puzzles/<id>
 class PuzzleDetailAPIView(generics.RetrieveAPIView):
     queryset = Puzzle.objects.all()
@@ -65,11 +66,16 @@ class ClueDetailAPIView(generics.RetrieveAPIView):
     permission_classes = [AllowAny]
 
 
-# /puzzles/<id>/clues
+# /puzzles/<id>/clues/<set>
 class PuzzleCluesAPIView(generics.ListAPIView):
 
     def get_queryset(self):
-        return get_object_or_404(Puzzle, id=self.kwargs['id']).clues.down.items.all()
+        puzzle = get_object_or_404(Puzzle, id=self.kwargs['id'])
+        if self.kwargs['set'] == 'across':
+            set = puzzle.clues.across
+        else:
+            set = puzzle.clues.down
+        return set.items.all()
 
     serializer_class = ClueDetailSerializer
     permission_classes = [AllowAny]
@@ -79,6 +85,7 @@ class PuzzleCluesAPIView(generics.ListAPIView):
 class PuzzleByDateView(APIView):
     """
     Retrieve a puzzle instance by date and collection parameters
+    may add new puzzle to the database
     """
     def get(self, request):
         puzzle = get_puzzle(day=request.query_params['day'], month=request.query_params['month'],
@@ -88,3 +95,6 @@ class PuzzleByDateView(APIView):
         else:
             serializer = PuzzleDetailSerializer(puzzle, context={'request': request})
             return Response(serializer.data)
+
+# # /puzzle/<>
+# class PuzzleGridAPIView(APIView):
