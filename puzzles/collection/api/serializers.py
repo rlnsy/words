@@ -23,6 +23,14 @@ class GridCellSerializer(serializers.HyperlinkedModelSerializer):
 
 
 class GridRowSerializer(serializers.Serializer):
+
+    # TODO: add these where needed
+    # def update(self, instance, validated_data):
+    #     pass
+    #
+    # def create(self, validated_data):
+    #     pass
+
     cells = GridCellSerializer(many=True)
 
 
@@ -54,12 +62,6 @@ class AbstractClueNestedSerializer(serializers.HyperlinkedModelSerializer):
 class ClueDetailSerializer(serializers.Serializer):
     abstract = AbstractClueNestedSerializer()
     grid_num = serializers.IntegerField()
-
-
-# class ClueSetSerializer(serializers.Serializer):
-#     items = ClueDetailSerializer(many=True)
-#
-#
 
 
 class PuzzleCluesSerializer(serializers.Serializer):
@@ -130,12 +132,6 @@ class PuzzleDetailSerializer(serializers.HyperlinkedModelSerializer):
             }
             return self.queryset.get(**lookup_kwargs)
 
-    # clues = {
-    #     'across': None
-    #     # 'across': ,
-    #     # 'down': CluesHyperlink(c_set='down')
-    # }
-
     clues = PuzzleCluesSerializer()
 
     grid = GridHyperlink()
@@ -158,6 +154,7 @@ class PuzzleDetailSerializer(serializers.HyperlinkedModelSerializer):
 
 
 class PuzzleListSerializer(serializers.HyperlinkedModelSerializer):
+    # TODO: not using this class
     class Meta:
         model = Puzzle
         fields = (

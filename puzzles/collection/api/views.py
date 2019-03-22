@@ -34,7 +34,7 @@ class PuzzleDetailAPIView(generics.RetrieveAPIView):
 # /puzzles
 class PuzzleListAPIView(generics.ListAPIView):
     queryset = Puzzle.objects.all()
-    serializer_class = PuzzleListSerializer
+    serializer_class = PuzzleDetailSerializer  # show all details
     permission_classes = [AllowAny]
 
 
