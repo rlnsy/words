@@ -60,8 +60,8 @@ class PuzzleClues(models.Model):
     """
     #     All the necessary clues for a puzzle; across and down sets
     #     """
-    across = models.OneToOneField(ClueSet, on_delete=models.CASCADE, related_name='+')
-    down = models.OneToOneField(ClueSet, on_delete=models.CASCADE, related_name='+')
+    across = models.OneToOneField(ClueSet, on_delete=models.CASCADE, related_name='origin_across')
+    down = models.OneToOneField(ClueSet, on_delete=models.CASCADE, related_name='origin_down')
 
 
 class Puzzle(models.Model):
@@ -84,8 +84,8 @@ class Puzzle(models.Model):
     num_words = models.IntegerField()                # Number of words in the puzzle
     num_blocks = models.IntegerField()              # Number of black cells in the puzzle
 
-    grid = models.OneToOneField(PuzzleGrid, on_delete=models.CASCADE, related_name="grid_of")
-    clues = models.OneToOneField(PuzzleClues, on_delete=models.CASCADE, related_name="clues_of")
+    grid = models.OneToOneField(PuzzleGrid, on_delete=models.CASCADE, related_name="puzzle")
+    clues = models.OneToOneField(PuzzleClues, on_delete=models.CASCADE, related_name="puzzle_of")
 
     collection = models.ForeignKey('collection.Collection', blank=True,
                                    on_delete=models.CASCADE, related_name="collection_containing")

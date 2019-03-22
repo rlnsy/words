@@ -6,7 +6,8 @@ from .views import (
     ClueListAPIView,
     ClueDetailAPIView,
     PuzzleCluesAPIView,
-    PuzzleByDateView
+    PuzzleByDateView,
+    PuzzleGridAPIView
 )
 
 from django.urls import path
@@ -20,5 +21,5 @@ urlpatterns = [
     path('clues', ClueListAPIView.as_view(), name='clue-list'),
     path('clues/<int:pk>', ClueDetailAPIView.as_view(), name='clue-detail'),
     path('puzzles/<int:id>/clues/<str:set>', PuzzleCluesAPIView.as_view(), name='puzzleclues-detail'),
-    #path('puzzles/<int:id>/grid', PuzzleGridAPIView.as_view(), name='puzzlegrid-detail')
+    path('puzzles/<int:puzzle_id>/grid', PuzzleGridAPIView.as_view(), name='puzzlegrid-detail')
 ]

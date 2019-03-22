@@ -17,7 +17,8 @@ from .serializers import (
     CollectionSerializer,
     CollectionListSerializer,
     ClueDetailSerializer,
-    AbstractClueSerializer
+    AbstractClueSerializer,
+    GridSerializer
 )
 
 logger = logging.getLogger('django')
@@ -96,5 +97,10 @@ class PuzzleByDateView(APIView):
             serializer = PuzzleDetailSerializer(puzzle, context={'request': request})
             return Response(serializer.data)
 
-# # /puzzle/<>
-# class PuzzleGridAPIView(APIView):
+
+# /puzzle/<id>
+class PuzzleGridAPIView(APIView):
+    def get(self, request, puzzle_id):
+        puzzle = get_object_or_404(Puzzle, id=puzzle_id)
+        serializer = GridSerializer(puzzle.grid, context={'request': request})
+        return Response(serializer.data)
