@@ -121,7 +121,8 @@ def save_puzzle(collection, day, month, year):
     # create the object
     new_puzzle = Puzzle(collection=collection)
     new_puzzle.title = info['title']
-    new_puzzle.subtitle = info['subtitle']
+    sub = info['subtitle']
+    new_puzzle.subtitle = sub if sub is not None else ""
     new_puzzle.author = info['author']
     new_puzzle.editor = info['editor']
     new_puzzle.pub_day = info['day']

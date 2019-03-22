@@ -72,7 +72,8 @@ class Puzzle(models.Model):
     """
 
     title = models.CharField(max_length=200)        # Primary puzzle title
-    subtitle = models.CharField(max_length=200)     # Secondary title, if applicable
+    subtitle = models.CharField(max_length=200,
+                                blank=True)         # Secondary title, if applicable
     author = models.CharField(max_length=100)       # Puzzle Author
     editor = models.CharField(max_length=100)       # Puzzle Editor
     pub_day = models.IntegerField()                 # Day of publishing (e.g. 1, 30)
@@ -87,7 +88,7 @@ class Puzzle(models.Model):
     grid = models.OneToOneField(PuzzleGrid, on_delete=models.CASCADE, related_name="puzzle")
     clues = models.OneToOneField(PuzzleClues, on_delete=models.CASCADE, related_name="puzzle_of")
 
-    collection = models.ForeignKey('collection.Collection', blank=True,
+    collection = models.ForeignKey('collection.Collection',
                                    on_delete=models.CASCADE, related_name="collection_containing")
 
     def __str__(self):
@@ -105,7 +106,7 @@ class Collection(models.Model):
     """
     long_name = models.CharField(max_length=200)
     name = models.CharField(max_length=50)
-    puzzles = models.ManyToManyField(Puzzle, related_name="puzzles_in")
+    puzzles = models.ManyToManyField(Puzzle, related_name="puzzles_in", blank=True)
 
     def __str__(self):
         return self.long_name
