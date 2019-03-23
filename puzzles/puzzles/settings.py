@@ -36,6 +36,7 @@ REST_FRAMEWORK = {
 # Application definition
 
 INSTALLED_APPS = [
+    'webpack_loader',
     'rest_framework',
     'django_extensions',
     'sources.apps.SourcesConfig',
@@ -146,4 +147,11 @@ LOGGING = {
             'propagate': True,
         },
     },
+}
+
+WEBPACK_LOADER = {
+    'DEFAULT': {
+            'BUNDLE_DIR_NAME': 'bundles/',
+            'STATS_FILE': os.path.join(BASE_DIR, 'webpack-stats.dev.json'),
+        }
 }
