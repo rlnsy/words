@@ -21,8 +21,5 @@
     "not dead",
     "not ie <= 11",
     "not op_mini all"
-  ],
-  "devDependencies": {
-    "webpack-bundle-tracker": "^0.4.2-beta"
-  }
+  ]
 }
